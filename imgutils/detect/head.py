@@ -89,7 +89,6 @@ def detect_heads(image: ImageTyping, level: Optional[str] = None,
             'Argument level in function detect_heads is deprecated and will be removed in the future, '
             'please migrate to model_name as soon as possible.'
         ))
-    print(f"MODEL NAME {model_name}")
     return yolo_predict(
         image=image,
         repo_id=_REPO_ID,

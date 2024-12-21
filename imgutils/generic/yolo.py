@@ -484,7 +484,6 @@ class YOLOModel:
         :param hf_token: Optional Hugging Face authentication token.
         :type hf_token: Optional[str]
         """
-        print(f"DEBUT INIT YOLO MODEL")
         self.repo_id = repo_id
         self._model_names = None
         self._models = {}
@@ -492,14 +491,6 @@ class YOLOModel:
         self._hf_token = hf_token
         self._global_lock = Lock()
         self._model_lock = Lock()
-        print(f"self.repo_id {self.repo_id}")
-        print(f"self._model_names {self._model_names}")
-        print(f"self._models {self._models}")
-        print(f"self._model_types {self._model_types}")
-        print(f"self._hf_token {self._hf_token}")
-        print(f"self._global_lock {self._global_lock}")
-        print(f"self._model_lock {self._model_lock}")
-        print(f"FIN INIT YOLO MODEL")
 
     def _get_hf_token(self) -> Optional[str]:
         """
@@ -563,7 +554,7 @@ class YOLOModel:
                 local_model_path = os.path.normpath(local_model_path)  # Normaliser le chemin
 
                 if not os.path.exists(local_model_path):
-                    raise FileNotFoundError(f"Le fichier du modèle ONNX n'a pas été trouvé à l'emplacement spécifié : {local_model_path}")
+                    raise FileNotFoundError(f"The ONNX model file was not found at the specified location: {local_model_path}")
 
                 model = open_onnx_model(local_model_path)
 
@@ -630,18 +621,13 @@ class YOLOModel:
         >>> print(detections[0])  # First detection
         ((100, 200, 300, 400), 'person', 0.95)
         """
-        print(f"execution de open model (retourne model)")
         model, max_infer_size, labels = self._open_model(model_name)
-        print(f"load de l image")
         image = load_image(image, mode='RGB')
         new_image, old_size, new_size = _image_preprocess(
             image, max_infer_size, allow_dynamic=allow_dynamic)
         data = rgb_encode(new_image)[None, ...]
         output, = model.run(['output0'], {'images': data})
-        print(f"OUTPUT CALCULEE: {output}")
         model_type = self._get_model_type(model_name=model_name)
-        print(f"model_type {model_type} {type(model_type)}")
-        print("model_type = yolo ou rtdetr or erreur. retourne l output differemment")
         if model_type == 'yolo':
             return _yolo_postprocess(
                 output=output[0],
@@ -843,8 +829,6 @@ def _open_models_for_repo_id(repo_id: str, hf_token: Optional[str] = None) -> YO
         >>> # Subsequent calls with the same repo_id will return the cached model
         >>> same_model = _open_models_for_repo_id("yolov5/yolov5s")
     """
-    print(f"_open_models_for_repo_id, retourne un YOLOModel")
-    print(f"hf_token: {hf_token}")
     return YOLOModel(repo_id, hf_token=hf_token)
 
 
