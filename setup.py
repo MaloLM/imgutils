@@ -48,7 +48,7 @@ setup(
     author_email=meta['__AUTHOR_EMAIL__'],
     license='Apache License, Version 2.0',
     keywords=meta['__DESCRIPTION__'],
-    url='https://github.com/deepghs/imgutils',
+    url='https://github.com/MaloLM/imgutils',
 
     # environment
     python_requires=">=3.8",
