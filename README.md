@@ -129,7 +129,7 @@ artistic illustrations in the future.
 Anime images can be converted to line drawings using the model provided
 by [patrickvonplaten/controlnet_aux](https://github.com/patrickvonplaten/controlnet_aux), as shown below.
 
-![edge example](https://github.com/deepghs/imgutils/blob/gh-pages/main/_images/edge_demo.plot.py.svg)
+<!-- ![edge example](https://github.com/deepghs/imgutils/blob/gh-pages/main/_images/edge_demo.plot.py.svg) -->
 
 It is worth noting that the `lineart` model may consume more computational resources, while `canny` is the fastest but
 has average effect. Therefore, `lineart_anime` may be the most balanced choice in most cases.
@@ -140,7 +140,7 @@ When filtering the crawled images, we need to remove monochrome images. However,
 composed of grayscale colors and may still contain colors, as shown by the first two rows of six images in the figure
 below
 
-![monochrome example](https://deepghs.github.io/imgutils/main/_images/monochrome.plot.py.svg)
+<!-- ![monochrome example](https://deepghs.github.io/imgutils/main/_images/monochrome.plot.py.svg) -->
 
 We can use `is_monochrome` to determine whether an image is monochrome, as shown below:
 
