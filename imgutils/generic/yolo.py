@@ -509,7 +509,7 @@ class YOLOModel:
         :return: List of model names.
         :rtype: List[str]
         """
-        self._model_names = ['head_detect_v2.0_s', 'head_detect_v2.0_n']
+        self._model_names = ['head_detect_v2p0_s', 'head_detect_v2p0_n']
         return self._model_names
 
     def _check_model_name(self, model_name: str):

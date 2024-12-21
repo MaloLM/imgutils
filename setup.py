@@ -46,7 +46,7 @@ setup(
     long_description_content_type='text/markdown',
     author=meta['__AUTHOR__'],
     author_email=meta['__AUTHOR_EMAIL__'],
-    license='Apache License, Version 2.0',
+    license='MIT',
     keywords=meta['__DESCRIPTION__'],
     url='https://github.com/MaloLM/imgutils',
 

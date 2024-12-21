@@ -32,7 +32,7 @@ from ..generic import yolo_predict
 _REPO_ID = 'deepghs/anime_head_detection'
 
 
-def detect_heads(image: ImageTyping, model_name: Optional[str] = 'head_detect_v2.0_s',
+def detect_heads(image: ImageTyping, model_name: Optional[str] = 'head_detect_v2p0_s',
                  conf_threshold: float = 0.4, iou_threshold: float = 0.7, **kwargs) \
         -> List[Tuple[Tuple[int, int, int, int], str, float]]:
     """
@@ -46,7 +46,7 @@ def detect_heads(image: ImageTyping, model_name: Optional[str] = 'head_detect_v2
 
     :type level: Optional[str]
 
-    :param model_name: Name of the specific YOLO model to use. If not provided, uses 'head_detect_v2.0_s'.
+    :param model_name: Name of the specific YOLO model to use. If not provided, uses 'head_detect_v2p0_s'.
     :type model_name: Optional[str]
 
     :param conf_threshold: Confidence threshold for detection results. Only detections with confidence above this value are returned. Default is 0.4.
