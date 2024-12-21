@@ -32,8 +32,7 @@ from ..generic import yolo_predict
 _REPO_ID = 'deepghs/anime_head_detection'
 
 
-def detect_heads(image: ImageTyping, level: Optional[str] = None,
-                 model_name: Optional[str] = 'head_detect_v2.0_s',
+def detect_heads(image: ImageTyping, model_name: Optional[str] = 'head_detect_v2.0_s',
                  conf_threshold: float = 0.4, iou_threshold: float = 0.7, **kwargs) \
         -> List[Tuple[Tuple[int, int, int, int], str, float]]:
     """
@@ -45,9 +44,6 @@ def detect_heads(image: ImageTyping, level: Optional[str] = None,
     :param image: The input image for head detection. Can be a file path, URL, or image data.
     :type image: ImageTyping
 
-    :param level: The model level to use. 's' for higher accuracy, 'n' for faster speed.
-                  Default is None (actually equals to 's').
-                  This parameter is deprecated and will be removed in future versions.
     :type level: Optional[str]
 
     :param model_name: Name of the specific YOLO model to use. If not provided, uses 'head_detect_v2.0_s'.
@@ -84,15 +80,10 @@ def detect_heads(image: ImageTyping, level: Optional[str] = None,
 
         The 'level' parameter is deprecated and will be removed in future versions. Use 'model_name' instead.
     """
-    if level:
-        warnings.warn(DeprecationWarning(
-            'Argument level in function detect_heads is deprecated and will be removed in the future, '
-            'please migrate to model_name as soon as possible.'
-        ))
     return yolo_predict(
         image=image,
         repo_id=_REPO_ID,
-        model_name=model_name or f'head_detect_v0_{level or "s"}',
+        model_name=model_name,
         conf_threshold=conf_threshold,
         iou_threshold=iou_threshold,
         **kwargs,
