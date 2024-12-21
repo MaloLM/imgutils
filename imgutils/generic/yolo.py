@@ -23,8 +23,8 @@ from PIL import Image
 from hbutils.color import rnd_colors
 from hfutils.operate import get_hf_client, get_hf_fs
 from hfutils.repository import hf_hub_repo_url
-from hfutils.utils import hf_fs_path, hf_normpath
-from huggingface_hub import HfFileSystem, hf_hub_download
+from hfutils.utils import hf_fs_path #, hf_normpath
+# from huggingface_hub import HfFileSystem
 
 from ..data import load_image, rgb_encode, ImageTyping
 from ..utils import open_onnx_model, ts_lru_cache
@@ -509,19 +509,7 @@ class YOLOModel:
         :return: List of model names.
         :rtype: List[str]
         """
-        with self._global_lock:
-            if self._model_names is None:
-                hf_fs = HfFileSystem(token=self._get_hf_token())
-                self._model_names = [
-                    hf_normpath(os.path.dirname(
-                        os.path.relpath(item, self.repo_id)))
-                    for item in hf_fs.glob(hf_fs_path(
-                        repo_id=self.repo_id,
-                        repo_type='model',
-                        filename='*/model.onnx',
-                    ))
-                ]
-
+        self._model_names = ['head_detect_v2.0_s', 'head_detect_v2.0_n']
         return self._model_names
 
     def _check_model_name(self, model_name: str):
