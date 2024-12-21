@@ -38,24 +38,6 @@ to [Installation](https://deepghs.github.io/imgutils/main/tutorials/installation
 the [official documentation](https://deepghs.github.io/imgutils/main/index.html). Here, we won't go into each of them
 individually.
 
-### Tachie(差分) Detection and Clustering
-
-For the dataset, we need to filter the differences between the tachie(差分). As shown in the following picture
-
-<!-- ![tachie](https://deepghs.github.io/imgutils/main/_images/lpips_full.plot.py.svg) -->
-
-We can use `lpips_clustering` to cluster such situations as shown below
-
-```python
-from imgutils.metrics import lpips_clustering
-
-images = [f'lpips/{i}.jpg' for i in range(1, 10)]
-print(images)
-# ['lpips/1.jpg', 'lpips/2.jpg', 'lpips/3.jpg', 'lpips/4.jpg', 'lpips/5.jpg', 'lpips/6.jpg', 'lpips/7.jpg', 'lpips/8.jpg', 'lpips/9.jpg']
-print(lpips_clustering(images))  # -1 means noises, the same as that in sklearn
-# [0, 0, 0, 1, 1, -1, -1, -1, -1]
-```
-
 ### Contrastive Character Image Pretraining
 
 We can use `imgutils` to extract features from anime character images (containing only a single character), calculate
