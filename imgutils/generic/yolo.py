@@ -263,14 +263,16 @@ def _end2end_postprocess(output, conf_threshold: float, iou_threshold: float,
     :raises AssertionError: If the output shape is not as expected.
     """
     assert output.shape[-1] == 6
-    _ = iou_threshold  # actually the iou_threshold has not been supplied to end2end post-processing
+    # actually the iou_threshold has not been supplied to end2end post-processing
+    _ = iou_threshold
     detections = []
     output = output[output[:, 4] > conf_threshold]
     selected_idx = _yolo_nms(output[:, :4], output[:, 4])
     for x0, y0, x1, y1, score, cls in output[selected_idx]:
         x0, y0 = _xy_postprocess(x0, y0, old_size, new_size)
         x1, y1 = _xy_postprocess(x1, y1, old_size, new_size)
-        detections.append(((x0, y0, x1, y1), labels[int(cls.item())], float(score)))
+        detections.append(
+            ((x0, y0, x1, y1), labels[int(cls.item())], float(score)))
 
     return detections
 
@@ -324,7 +326,8 @@ def _nms_postprocess(output, conf_threshold: float, iou_threshold: float,
         x0, y0 = _xy_postprocess(box[0], box[1], old_size, new_size)
         x1, y1 = _xy_postprocess(box[2], box[3], old_size, new_size)
         max_score_id = score.argmax()
-        detections.append(((x0, y0, x1, y1), labels[max_score_id], float(score[max_score_id])))
+        detections.append(
+            ((x0, y0, x1, y1), labels[max_score_id], float(score[max_score_id])))
 
     return detections
 
@@ -481,6 +484,7 @@ class YOLOModel:
         :param hf_token: Optional Hugging Face authentication token.
         :type hf_token: Optional[str]
         """
+        print(f"DEBUT INIT YOLO MODEL")
         self.repo_id = repo_id
         self._model_names = None
         self._models = {}
@@ -488,6 +492,14 @@ class YOLOModel:
         self._hf_token = hf_token
         self._global_lock = Lock()
         self._model_lock = Lock()
+        print(f"self.repo_id {self.repo_id}")
+        print(f"self._model_names {self._model_names}")
+        print(f"self._models {self._models}")
+        print(f"self._model_types {self._model_types}")
+        print(f"self._hf_token {self._hf_token}")
+        print(f"self._global_lock {self._global_lock}")
+        print(f"self._model_lock {self._model_lock}")
+        print(f"FIN INIT YOLO MODEL")
 
     def _get_hf_token(self) -> Optional[str]:
         """
@@ -510,7 +522,8 @@ class YOLOModel:
             if self._model_names is None:
                 hf_fs = HfFileSystem(token=self._get_hf_token())
                 self._model_names = [
-                    hf_normpath(os.path.dirname(os.path.relpath(item, self.repo_id)))
+                    hf_normpath(os.path.dirname(
+                        os.path.relpath(item, self.repo_id)))
                     for item in hf_fs.glob(hf_fs_path(
                         repo_id=self.repo_id,
                         repo_type='model',
@@ -544,18 +557,25 @@ class YOLOModel:
         with self._model_lock:
             if model_name not in self._models:
                 self._check_model_name(model_name)
-                model = open_onnx_model(hf_hub_download(
-                    self.repo_id,
-                    f'{model_name}/model.onnx',
-                    token=self._get_hf_token(),
-                ))
+                # **Modification Principale : Utiliser le chemin relatif au module**
+                module_dir = os.path.dirname(os.path.abspath(__file__))
+                local_model_path = os.path.join(module_dir, '..', 'models', f'{model_name}', 'model.onnx')
+                local_model_path = os.path.normpath(local_model_path)  # Normaliser le chemin
+
+                if not os.path.exists(local_model_path):
+                    raise FileNotFoundError(f"Le fichier du modèle ONNX n'a pas été trouvé à l'emplacement spécifié : {local_model_path}")
+
+                model = open_onnx_model(local_model_path)
+
                 model_metadata = model.get_modelmeta()
                 if 'imgsz' in model_metadata.custom_metadata_map:
-                    max_infer_size = tuple(json.loads(model_metadata.custom_metadata_map['imgsz']))
+                    max_infer_size = tuple(json.loads(
+                        model_metadata.custom_metadata_map['imgsz']))
                     assert len(max_infer_size) == 2, f'imgsz should have 2 dims, but {max_infer_size!r} found.'
                 else:
                     max_infer_size = 640
-                names_map = _safe_eval_names_str(model_metadata.custom_metadata_map['names'])
+                names_map = _safe_eval_names_str(
+                    model_metadata.custom_metadata_map['names'])
                 labels = [names_map[i] for i in range(len(names_map))]
                 self._models[model_name] = (model, max_infer_size, labels)
 
@@ -572,7 +592,8 @@ class YOLOModel:
                     revision='main',
                 )
                 if hf_fs.exists(fs_path):
-                    model_type = json.loads(hf_fs.read_text(fs_path))['model_type']
+                    model_type = json.loads(hf_fs.read_text(fs_path))[
+                        'model_type']
                 else:
                     model_type = 'yolo'
                 self._model_types[model_name] = model_type
@@ -609,12 +630,18 @@ class YOLOModel:
         >>> print(detections[0])  # First detection
         ((100, 200, 300, 400), 'person', 0.95)
         """
+        print(f"execution de open model (retourne model)")
         model, max_infer_size, labels = self._open_model(model_name)
+        print(f"load de l image")
         image = load_image(image, mode='RGB')
-        new_image, old_size, new_size = _image_preprocess(image, max_infer_size, allow_dynamic=allow_dynamic)
+        new_image, old_size, new_size = _image_preprocess(
+            image, max_infer_size, allow_dynamic=allow_dynamic)
         data = rgb_encode(new_image)[None, ...]
         output, = model.run(['output0'], {'images': data})
+        print(f"OUTPUT CALCULEE: {output}")
         model_type = self._get_model_type(model_name=model_name)
+        print(f"model_type {model_type} {type(model_type)}")
+        print("model_type = yolo ou rtdetr or erreur. retourne l output differemment")
         if model_type == 'yolo':
             return _yolo_postprocess(
                 output=output[0],
@@ -634,7 +661,8 @@ class YOLOModel:
                 labels=labels
             )
         else:
-            raise ValueError(f'Unknown object detection model type - {model_type!r}.')  # pragma: no cover
+            raise ValueError(
+                f'Unknown object detection model type - {model_type!r}.')  # pragma: no cover
 
     def clear(self):
         """
@@ -677,7 +705,8 @@ class YOLOModel:
             for fileitem in hf_client.get_paths_info(
                     repo_id=self.repo_id,
                     repo_type='model',
-                    paths=[f'{model_name}/model.onnx' for model_name in model_list],
+                    paths=[
+                        f'{model_name}/model.onnx' for model_name in model_list],
                     expand=True,
             ):
                 if not selected_time or fileitem.last_commit.date > selected_time:
@@ -711,11 +740,15 @@ class YOLOModel:
             with gr.Column():
                 gr_input_image = gr.Image(type='pil', label='Original Image')
                 with gr.Row():
-                    gr_model = gr.Dropdown(model_list, value=default_model_name, label='Model')
-                    gr_allow_dynamic = gr.Checkbox(value=False, label='Allow Dynamic Size')
+                    gr_model = gr.Dropdown(
+                        model_list, value=default_model_name, label='Model')
+                    gr_allow_dynamic = gr.Checkbox(
+                        value=False, label='Allow Dynamic Size')
                 with gr.Row():
-                    gr_iou_threshold = gr.Slider(0.0, 1.0, default_iou_threshold, label='IOU Threshold')
-                    gr_score_threshold = gr.Slider(0.0, 1.0, default_conf_threshold, label='Score Threshold')
+                    gr_iou_threshold = gr.Slider(
+                        0.0, 1.0, default_iou_threshold, label='IOU Threshold')
+                    gr_score_threshold = gr.Slider(
+                        0.0, 1.0, default_conf_threshold, label='Score Threshold')
 
                 gr_submit = gr.Button(value='Submit', variant='primary')
 
@@ -766,8 +799,10 @@ class YOLOModel:
         with gr.Blocks() as demo:
             with gr.Row():
                 with gr.Column():
-                    repo_url = hf_hub_repo_url(repo_id=self.repo_id, repo_type='model')
-                    gr.HTML(f'<h2 style="text-align: center;">YOLO Demo For {self.repo_id}</h2>')
+                    repo_url = hf_hub_repo_url(
+                        repo_id=self.repo_id, repo_type='model')
+                    gr.HTML(
+                        f'<h2 style="text-align: center;">YOLO Demo For {self.repo_id}</h2>')
                     gr.Markdown(f'This is the quick demo for YOLO model [{self.repo_id}]({repo_url}). '
                                 f'Powered by `dghs-imgutils`\'s quick demo module.')
 
@@ -808,6 +843,8 @@ def _open_models_for_repo_id(repo_id: str, hf_token: Optional[str] = None) -> YO
         >>> # Subsequent calls with the same repo_id will return the cached model
         >>> same_model = _open_models_for_repo_id("yolov5/yolov5s")
     """
+    print(f"_open_models_for_repo_id, retourne un YOLOModel")
+    print(f"hf_token: {hf_token}")
     return YOLOModel(repo_id, hf_token=hf_token)
 
 
